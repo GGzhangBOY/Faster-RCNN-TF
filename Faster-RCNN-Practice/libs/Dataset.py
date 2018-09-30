@@ -168,7 +168,9 @@ class Dataset:
         data_index = pic.Data
         data_labels = copy.deepcopy(pic.gt_pos)
         pic.gt_pos.remove(pic.gt_pos[0])
-
+        a = np.array(data_labels)
+        c = np.squeeze(a)
+        data_labels = c.tolist()
         return data_index,data_labels
 
 
