@@ -4,13 +4,6 @@ import os.path
 import numpy as np 
 import copy
 
-class breakPoint:
-    line_index = 0
-    file_index = 0
-    def __init__(self,l_index = 0,f_index = 0):
-        self.line_index = l_index
-        self.file_index = f_index
-
 def file_recursion(path_input,file_list):
     file_list = file_list
     if(os.path.exists(path_input)):
@@ -70,7 +63,7 @@ class Data_label:
         self.dimy = dimy
         self.pic_channels = pic_channels
 
-class Dataset:
+class Dataset_cus:
     
     total_batches = 0
     batch_size = 1
@@ -80,7 +73,6 @@ class Dataset:
     __Files_storer = []
     __is_break_point_activate = False
     __is_reading_file_changed = True
-    break_point = breakPoint()
 
     def __init__(self, batch_size_in=1, dataset_year="2002"):
         self.batch_size = batch_size_in
@@ -171,19 +163,23 @@ class Dataset:
         a = np.array(data_labels)
         c = np.squeeze(a)
         data_labels = c.tolist()
-        return data_index,data_labels
+        dimx = data_index.shape[1]
+        dimy = data_index.shape[0]
+        channels = data_index.shape[2]
+
+        return data_index,data_labels,dimx,dimy,channels
 
 
 if(__name__ == '__main__'):
-    test = Dataset()
-    _,label1 = test.next_batch()
+    test = Dataset_cus()
+    _,label1,_,_,_ = test.next_batch()
 
     print(label1)
 
-    _,label2 = test.next_batch()
+    _,label2,_,_,_ = test.next_batch()
 
     print(label2)
 
-    _,label3 = test.next_batch()
+    _,label3,_,_,_ = test.next_batch()
 
     print(label3)

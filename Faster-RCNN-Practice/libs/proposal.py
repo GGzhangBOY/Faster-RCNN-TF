@@ -40,5 +40,5 @@ def _project_back_to_source(source_dimx, source_dimy, stride):
     return source_anchors
 
 if(__name__=="__main__"):
-    _project_back_to_source(224,224,16)
+    _project_back_to_source(409,301,16)
 
