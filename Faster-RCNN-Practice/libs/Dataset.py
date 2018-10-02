@@ -29,9 +29,10 @@ def open_pic(path_input):
     else:
         channels = 1
 
-    dimx = pic.shape[0]
-    dimy = pic.shape[1]
+    dimx = pic.shape[1]
+    dimy = pic.shape[0]
 
+    pic = pic.tolist()
     return pic,channels,dimx,dimy
 
 class Data_label:
@@ -163,9 +164,9 @@ class Dataset_cus:
         a = np.array(data_labels)
         c = np.squeeze(a)
         data_labels = c.tolist()
-        dimx = data_index.shape[1]
-        dimy = data_index.shape[0]
-        channels = data_index.shape[2]
+        dimx = pic.dimx
+        dimy = pic.dimy
+        channels = pic.pic_channels
 
         return data_index,data_labels,dimx,dimy,channels
 

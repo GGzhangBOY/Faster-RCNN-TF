@@ -1,5 +1,5 @@
 import tensorflow as tf 
-
+import numpy as np 
 class Resnet:
 
     def identity_block(self, X_input, kernel_size, in_filter, out_filters, stage, block="identity_block", training="training"):
@@ -60,43 +60,44 @@ class Resnet:
 
         x = tf.placeholder(tf.float32,[None,(dimx*dimy)])
         x = tf.reshape(x,[-1,dimy,dimx,channels])
-        x_pad = tf.pad(x, tf.constant([[0, 0], [3, 3 ], [3, 3], [0, 0]]), "CONSTANT")
+        x_pad = tf.pad(x, tf.constant([[0, 0],[3, 3], [3, 3], [0, 0]]), "CONSTANT")
         with tf.variable_scope('reference') :
             training = tf.placeholder(tf.bool, name='training')
 
             #stage 1
             w_conv1 = tf.Variable(tf.random_normal([7, 7, 3, 64]))
-            conv1_x = tf.nn.conv2d(x, w_conv1, strides=[1, 2, 2, 1], padding='VALID')
-            L1_x1 = tf.layers.batch_normalization(x, axis=3, training=training)
-            L1_x2 = tf.nn.relu(x)
-            L1_x3 = tf.nn.max_pool(x, ksize=[1, 3, 3, 1],
+            conv1_x = tf.nn.conv2d(x_pad, w_conv1, strides=[1, 2, 2, 1], padding='VALID')
+            L1_x1 = tf.layers.batch_normalization(conv1_x, axis=3, training=training)
+            L1_x2 = tf.nn.relu(L1_x1)
+            L1_x3 = tf.nn.max_pool(L1_x2, ksize=[1, 3, 3, 1],
                            strides=[1, 2, 2, 1], padding='VALID')
 
             #stage 2
-            conv2_x = self.convolutional_block(x, 3, 64, [64, 64, 256], 2, 'a', training, stride=1)
-            L2_x1 = self.identity_block(x, 3, 256, [64, 64, 256], stage=2, block='b', training=training)
-            L2_x2 = self.identity_block(x, 3, 256, [64, 64, 256], stage=2, block='c', training=training)
+            conv2_x = self.convolutional_block(L1_x3, 3, 64, [64, 64, 256], 2, 'a', training, stride=1)
+            L2_x1 = self.identity_block(conv2_x, 3, 256, [64, 64, 256], stage=2, block='b', training=training)
+            #L2_x2 = self.identity_block(L2_x1, 3, 256, [64, 64, 256], stage=2, block='c', training=training)
 
             #stage 3
-            conv3_x = self.convolutional_block(x, 3, 256, [128,128,512], 3, 'a', training)
-            L3_x1 = self.identity_block(x, 3, 512, [128,128,512], 3, 'b', training=training)
-            L3_x2 = self.identity_block(x, 3, 512, [128,128,512], 3, 'c', training=training)
-            L3_x3 = self.identity_block(x, 3, 512, [128,128,512], 3, 'd', training=training)
+            conv3_x = self.convolutional_block(L2_x1, 3, 256, [128,128,512], 3, 'a', training)
+            L3_x1 = self.identity_block(conv3_x, 3, 512, [128,128,512], 3, 'b', training=training)
+            #L3_x2 = self.identity_block(L3_x1, 3, 512, [128,128,512], 3, 'c', training=training)
+            #L3_x3 = self.identity_block(L3_x2, 3, 512, [128,128,512], 3, 'd', training=training)
 
             #stage 4
-            conv4_x = self.convolutional_block(x, 3, 512, [256, 256, 1024], 4, 'a', training)
-            L4_x1 = self.identity_block(x, 3, 1024, [256, 256, 1024], 4, 'b', training=training)
-            L4_x2 = self.identity_block(x, 3, 1024, [256, 256, 1024], 4, 'c', training=training)
-            L4_x3 = self.identity_block(x, 3, 1024, [256, 256, 1024], 4, 'd', training=training)
-            L4_x4 = self.identity_block (x, 3, 1024, [256, 256, 1024], 4, 'e', training=training)
-            L4_x5 = self.identity_block(x, 3, 1024, [256, 256, 1024], 4, 'f', training=training)
+            conv4_x = self.convolutional_block(L3_x1, 3, 512, [256, 256, 1024], 4, 'a', training)
+            L4_x1 = self.identity_block(conv4_x, 3, 1024, [256, 256, 1024], 4, 'b', training=training)
+            #L4_x2 = self.identity_block(L4_x1, 3, 1024, [256, 256, 1024], 4, 'c', training=training)
+            #L4_x3 = self.identity_block(L4_x2, 3, 1024, [256, 256, 1024], 4, 'd', training=training)
+            #L4_x4 = self.identity_block (L4_x3, 3, 1024, [256, 256, 1024], 4, 'e', training=training)
+            L4_x5 = self.identity_block(L4_x1, 3, 1024, [256, 256, 1024], 4, 'f', training=training)
 
             with tf.Session() as sess: 
                 sess.run(tf.global_variables_initializer())
-                feed_dict = {x:x_input}
-                feature_maps = sess.run(cov5_1,feed_dict=feed_dict)
+                feed_dict = {x:x_input,training:False}
+                feature_maps,_ = sess.run([L4_x5,conv2_x],feed_dict=feed_dict)
             
-        return feature_maps
+            feature_shape = feature_maps.shape
+        return feature_maps,feature_shape
                 
 
 

@@ -3,10 +3,15 @@ import tensorflow.contrib.slim as slim
 import numpy as np
 
 #using a sliding window to slide on the feature map and ganerate 1-d features
-def RPN_conv1(feature_map):
-    w1 = slim.variable(tf.random_normal([3,3,256,256]))
-    L1 = tf.nn.conv2d(feature_map,w1,strides=[1,1,1,1],padding="SAME")
-    print(L1.shape()[2])
+def RPN_conv1(feature_map,feature_shape):
+    x = tf.placeholder(tf.float32,[feature_shape[0],feature_shape[1],feature_shape[2],feature_shape[3]])
+    w1 = tf.Variable(tf.random_normal([3, 3, 1024, 256]))
+    L1 = tf.nn.conv2d(x,w1,strides=[1,1,1,1],padding="SAME")
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        feed_dict = {x:feature_map}
+        result = sess.run(L1,feed_dict=feed_dict)
+        print(result.shape)
     _feature_per_slide = tf.convert_to_tensor(feature_per_slid(L1,L1.shape()[2],L1.shape()[1],L1.shape()[0]))
     
 
