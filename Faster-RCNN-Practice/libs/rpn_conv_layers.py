@@ -12,20 +12,22 @@ def RPN_conv1(feature_map,feature_shape):
         feed_dict = {x:feature_map}
         result = sess.run(L1,feed_dict=feed_dict)
         print(result.shape)
-    _feature_per_slide = tf.convert_to_tensor(feature_per_slid(L1,L1.shape()[2],L1.shape()[1],L1.shape()[0]))
+    _feature_per_slide = tf.convert_to_tensor(feature_per_slid(result,result.shape[3],result.shape[2],result.shape[1]))
     
 
 
 def feature_per_slid(input_data,numx,dimx,dimy):
-    input_np = input_data.eval()
-    feature1d = np.array()
-    feature_all = np.array()
+    input_np = np.array(input_data)
+    feature1d = np.array([])
+    feature_all = np.zeros(shape = (756,1))
     for n in range(numx):
         for i in range(dimx):
             for j in range(dimy):
-                feature1d = np.hstack((feature1d,input_np[n,i,j]))
+                feature1d = np.hstack((feature1d,input_np[0,j,i,n]))
         feature_all = np.column_stack((feature_all,feature1d))
+        feature1d = np.array([])
     
+    feature_all = feature_all[:,1:]
     return feature_all
 
 
