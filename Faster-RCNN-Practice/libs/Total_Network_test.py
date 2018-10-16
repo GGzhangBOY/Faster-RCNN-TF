@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np 
 import Dataset
 import resnet
-import rpn_conv_layers
+import rpn_layers as rpn
 
 class Fast_RCNN:
     __current_labels = []
@@ -12,8 +12,8 @@ class Fast_RCNN:
         test_Resnet = resnet.Resnet()
         data_index = np.array(data_index)
         data_index = data_index[np.newaxis,:,:,:]
-        feature_maps,feature_shape = test_Resnet.build_main_structure(data_index,dimx,dimy,channels)
-        rpn_conv_layers.RPN_conv1(feature_maps,feature_shape)
+        feature_maps,feature_shape,strides = test_Resnet.build_main_structure(data_index,dimx,dimy,channels)
+        rpn_test = rpn.RPN_layers(feature_maps,feature_shape,self.__current_labels,"train",dimx,dimy,strides)
 
 if(__name__=='__main__'):
     model_test = Fast_RCNN()

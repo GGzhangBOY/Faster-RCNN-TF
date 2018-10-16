@@ -97,7 +97,8 @@ class Resnet:
                 feature_maps,_ = sess.run([L4_x5,conv2_x],feed_dict=feed_dict)
             
             feature_shape = feature_maps.shape
-        return feature_maps,feature_shape
+            strides = 16
+        return feature_maps,feature_shape,strides
                 
 
 

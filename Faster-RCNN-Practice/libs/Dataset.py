@@ -47,11 +47,11 @@ class Data_label:
     def __process_to_rect(self,get_pos):
         result = []
         for buff in get_pos:
-            x = buff[2]
-            y = buff[3]
-            h = 2*buff[0]
-            w = 2*buff[1]
-            result.append([x,y,w,h])
+            x1 = buff[2] - buff[0]
+            y1 = buff[3] - buff[1]
+            x2 = buff[2] + buff[0]
+            y2 = buff[3] + buff[1]
+            result.append([x1,y1,x2,y2])
         
         return result
 
@@ -123,8 +123,11 @@ class Dataset_cus:
                     buff = []
                     Data_buff = line.split(' ')
                     
-                    for i in range(4):
+                    for i in range(5):
+                        if(i == 2):
+                            continue
                         buff.append(float(Data_buff[i]))
+
                     Data.append(buff)
                     num_gt-=1
                     lines.remove(lines[0])
@@ -175,12 +178,12 @@ if(__name__ == '__main__'):
     test = Dataset_cus()
     _,label1,_,_,_ = test.next_batch()
 
-    print(label1)
+    print(label1,len(np.array(label1).shape))
 
     _,label2,_,_,_ = test.next_batch()
 
-    print(label2)
+    print(label2,np.array(label2).shape)
 
     _,label3,_,_,_ = test.next_batch()
 
-    print(label3)
+    print(label3,np.array(label3).shape)
