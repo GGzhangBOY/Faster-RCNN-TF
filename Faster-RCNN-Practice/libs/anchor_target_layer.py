@@ -7,8 +7,8 @@ import tensorflow as tf
 import gen_anchors
 import proposal
 
-anchor_state = {'positive': 1, 'negtive': 0, 'unknown': -1}
-
+import bbox_overlaps
+import bbox_transform
 
 class anchor_label:
     def __init__(self, anchor, label, pos):
@@ -66,7 +66,7 @@ def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides
             if(np.abs(anchor[1]+anchor[3]) > dimy):
                 continue
         # calculate the overlap size,and judge the labels
-            current_label, pos = cal_IOU(anchor, gt_boxes)
+            current_label, pos = bbox_overlaps.cal_IOU(anchor, gt_boxes)
             labels.append(current_label)
             if(current_label == 1):
                 ins_anchors.append(anchor_label(anchor, current_label, pos))
@@ -100,11 +100,11 @@ def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides
     for i in range(len(ins_anchors)):
         ins_anchor = ins_anchors[i]
         if(len(np.array(gt_boxes).shape) > 1):
-            bbox_targets[i] = np.array(compute_target(
+            bbox_targets[i] = np.array(bbox_transform.bbox_transform(
                 ins_anchor.anchor, gt_boxes[ins_anchor.pos]))
         else:
             bbox_targets[i] = np.array(
-                compute_target(ins_anchor.anchor, gt_boxes))
+                bbox_transform.bbox_transform(ins_anchor.anchor, gt_boxes))
     # set the value to 1 if the anchor is fg
     print(np.array(labels).shape)
     print(np.array(ins_anchors).shape)
@@ -162,73 +162,3 @@ def unmap(data, count, inds, fill=0):
 
     return ret
 
-
-def cal_IOU(anchor, gt_boxes):
-    """
-    #this function calculate the anchor's overlap with the gt boxs, and return the largest overlap
-    """
-    anchor = [anchor[0], anchor[1], np.abs(
-        anchor[0]-anchor[2]), np.abs(anchor[1]-anchor[3])]
-    IOU_list = []
-    if(len(np.array(gt_boxes).shape) > 1):
-        i = 0
-        for gt_box in gt_boxes:
-            # 候选框与大框相交
-            IOU_list.append(cal_alg(anchor, gt_box))
-        pos = IOU_list.index(max(IOU_list))
-        result = max(IOU_list)
-    else:
-        IOU_list.append(cal_alg(anchor, gt_boxes))
-        result = max(IOU_list)
-        pos = IOU_list.index(max(IOU_list))
-    if(result > 0.7):
-        return anchor_state['positive'], pos
-    elif(result < 0.3):
-        return anchor_state['negtive'], pos
-    else:
-        return anchor_state['unknown'], pos
-
-
-def cal_alg(Reframe, GTframe):
-    x1 = Reframe[0]
-    y1 = Reframe[1]
-    width1 = Reframe[2]-Reframe[0]
-    height1 = Reframe[3]-Reframe[1]
-
-    x2 = GTframe[0]
-    y2 = GTframe[1]
-
-    width2 = GTframe[2]-GTframe[0]
-    height2 = GTframe[3]-GTframe[1]
-
-    endx = max(x1+width1, x2+width2)
-    startx = min(x1, x2)
-    width = np.abs(width1+width2-(endx-startx))  # 相交方框的宽
-
-    endy = max(y1+height1, y2+height2)
-
-    starty = min(y1, y2)
-
-    height = np.abs(height1+height2-(endy-starty))  # 相交方框的高
-
-    if width <= 0 or height <= 0:
-        ratio = 0  # 重叠率为 0
-
-    else:
-        Area = width*height  # 两矩形相交面积
-        Area1 = width1*height1
-        Area2 = width2*height2
-        ratio = Area*1./(Area1+Area2-Area)
-    # return IOU
-    return ratio
-
-
-def compute_target(anchor, gt_box):
-    tx = (gt_box[0]-anchor[0])/anchor[2]
-    ty = (gt_box[1]-anchor[1])/anchor[3]
-    tw = np.log(gt_box[2]/anchor[2])
-    th = np.long(gt_box[3]/anchor[3])
-
-    result = [tx, ty, tw, th]
-
-    return result
