@@ -98,7 +98,7 @@ class Resnet:
             
             feature_shape = feature_maps.shape
             strides = 16
-        return feature_maps,feature_shape,strides
+        return L4_x5,L4_x5.get_shape(),strides
                 
 
 

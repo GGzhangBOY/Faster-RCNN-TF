@@ -17,7 +17,7 @@ class anchor_label:
         self.pos = pos
 
 
-def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(2, 6)):
+def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(3, 6)):
     """rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = \
     tf.py_func( anchor_target_layer_python,[rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales],[tf.float32, tf.float32, tf.float32, tf.float32])"""
 

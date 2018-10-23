@@ -3,6 +3,7 @@ import numpy as np
 import Dataset
 import resnet
 import rpn_layers as rpn
+import roi_proposal_layer
 
 class Fast_RCNN:
     __current_labels = []
@@ -14,6 +15,7 @@ class Fast_RCNN:
         data_index = data_index[np.newaxis,:,:,:]
         feature_maps,feature_shape,strides = test_Resnet.build_main_structure(data_index,dimx,dimy,channels)
         rpn_test = rpn.RPN_layers(feature_maps,feature_shape,self.__current_labels,"train",dimx,dimy,strides)
+        rpn_proposal = roi_proposal_layer.roi_proposal_layer(rpn_test,data_index,)
 
 if(__name__=='__main__'):
     model_test = Fast_RCNN()

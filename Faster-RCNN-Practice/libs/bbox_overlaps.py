@@ -21,12 +21,11 @@ def cal_IOU(anchor, gt_boxes):
         IOU_list.append(cal_alg(anchor, gt_boxes))
         result = max(IOU_list)
         pos = IOU_list.index(max(IOU_list))
-    if(result > 0.7):
-        return anchor_state['positive'], pos
-    elif(result < 0.3):
+    
+    if(result < 0.3):
         return anchor_state['negtive'], pos
     else:
-        return anchor_state['unknown'], pos
+        return anchor_state['positive'], pos
 
 def cal_alg(Reframe, GTframe):
     x1 = Reframe[0]
