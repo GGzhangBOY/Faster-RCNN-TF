@@ -20,10 +20,7 @@ class anchor_label:
 def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(3, 6)):
     """rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = \
     tf.py_func( anchor_target_layer_python,[rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales],[tf.float32, tf.float32, tf.float32, tf.float32])"""
-
-    rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = \
-        anchor_target_layer_python(
-            rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales)
+    rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales)
     rpn_labels = tf.convert_to_tensor(
         tf.cast(rpn_labels, tf.int32), name="rpn_labels")
     rpn_bbox_targets = tf.convert_to_tensor(
@@ -36,7 +33,7 @@ def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, an
     return rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights
 
 
-def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(2, 6)):
+def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(3, 6)):
     """
     #this function is used to filter the out of range anchor and label each anchor for whether it's fg or bg
     """
@@ -106,8 +103,8 @@ def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides
             bbox_targets[i] = np.array(
                 bbox_transform.bbox_transform(ins_anchor.anchor, gt_boxes))
     # set the value to 1 if the anchor is fg
-    print(np.array(labels).shape)
-    print(np.array(ins_anchors).shape)
+    print("labels' shape",np.array(labels).shape)
+    print("Inside anchors' shape",np.array(ins_anchors).shape)
     bbox_inside_weights = np.zeros((len(ins_anchors), 4), dtype=np.float32)
     for i in range(len(labels)):
         if(labels[i] == 1):

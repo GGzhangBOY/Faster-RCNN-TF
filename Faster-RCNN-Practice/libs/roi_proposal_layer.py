@@ -15,10 +15,10 @@ class roi_proposal_layer(object):
 		self.im_dims       = im_dims
 		self.mode          = mode
 
-		self.rpn_cls_score = rpn_net.get_rpn_cls_score()
+		self.rpn_cls_score = rpn_net.get_rpn_cls_loss()
 		self.rpn_bbox_pred = rpn_net.get_rpn_bbox_pred() 
-		
-		self.num_classes   = 8
+
+		self.num_classes   = 2
 		self.anchor_scales = [ 8, 16, 32 ]
 		
 		self.network()

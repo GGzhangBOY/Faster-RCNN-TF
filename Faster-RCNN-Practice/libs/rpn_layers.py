@@ -21,61 +21,51 @@ class RPN_layers:
             anchor_target_layer.anchor_target_layer(self.__cls_conv(),self.gt_boxs,self.pic_dimx,self.pic_dimy,self.feat_strides)
 
     def __RPN_conv1(self):
-        x = tf.placeholder(tf.float32,[self.feature_shape[0],self.feature_shape[1],self.feature_shape[2],self.feature_shape[3]])
         w1 = tf.Variable(tf.random_normal([3, 3, 1024, 256]))
-        L1 = tf.nn.conv2d(x,w1,strides=[1,1,1,1],padding="SAME")
+        L1 = tf.nn.conv2d(self.feature_map,w1,strides=[1,1,1,1],padding="SAME")
         L1 = tf.nn.relu(L1)
-        with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            feed_dict = {x:self.feature_map}
-            result = sess.run(L1,feed_dict = feed_dict)
-        self.__feature_vector = self.__feature_per_slid(result,result.shape[3],result.shape[2],result.shape[1])
-
-    def __feature_per_slid(self,input_data,numx,dimx,dimy):
-        input_np = np.array(input_data)
-        feature1d = np.array([])
-        feature_all = np.zeros(shape = (756,1))
-        for n in range(numx):
-            for i in range(dimx):
-                for j in range(dimy):
-                    feature1d = np.hstack((feature1d,input_np[0,j,i,n]))
-            feature_all = np.column_stack((feature_all,feature1d))
-            feature1d = np.array([])
-        
-        self.feature_all = feature_all[:,1:]
-        return self.feature_all
+        self.__shape1 = L1.get_shape()[3]
+        self.__shape2 = L1.get_shape()[2]
+        self.__shape3 = L1.get_shape()[1]
+        L1 = tf.reshape(L1,[-1])
+        self.__feature_vector = tf.reshape(L1,[1,1,self.__shape2*self.__shape3,self.__shape1])
+        print(self.__feature_vector.get_shape())
+        self.__feature_vector = tf.to_double(self.__feature_vector)
+        #self.__feature_vector = self.__feature_per_slid(L1,L1.get_shape()[3],L1.get_shape()[2],L1.get_shape()[1])#(result,result.shape[3],result.shape[2],result.shape[1])
 
     def __cls_conv(self):
         with tf.variable_scope("cls"):
-            w_cls = tf.Variable(tf.random_normal([256,18],dtype = tf.float64))
+            w_cls = tf.Variable(tf.random_normal([1,1,256,18],dtype = tf.float64))
+            
             l_cls = tf.matmul(self.__feature_vector,w_cls)
-        
-        x_cls = tf.placeholder(tf.float32,[None,256])
+        """x_cls = tf.placeholder(tf.float32,[None,256])
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             feed_dict = {x_cls:self.__feature_vector}
-            result = sess.run(l_cls,feed_dict = feed_dict)
+            result = sess.run(l_cls,feed_dict = feed_dict)"""
 
-        return result
+        return l_cls
 
     def __reg_conv(self):
         with tf.variable_scope("reg"):
-            w_cls = tf.Variable(tf.random_normal([256,36],dtype = tf.float64))
-            l_cls = tf.matmul(self.__feature_vector,w_cls)
-
-        x_reg = tf.placeholder(tf.float32,[None,256])
+            w_reg = tf.Variable(tf.random_normal([1,1,256,36],dtype = tf.float64))
+            l_reg = tf.matmul(self.__feature_vector,w_reg)
+        """x_reg = tf.placeholder(tf.float32,[None,256])
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             feed_dict = {x_reg:self.__feature_vector}
-            result = sess.run(l_cls,feed_dict = feed_dict)
+            result = sess.run(l_cls,feed_dict = feed_dict)"""
 
-        return result
+        return l_reg
 
     def get_rpn_cls_loss(self): 
         rpn_cls_score = self.__cls_conv()
         rpn_labels =self.rpn_labels
     
         return self.__rpn_cls_loss(rpn_cls_score,rpn_labels)
+    
+    def get_rpn_bbox_pred(self):
+        return self.__reg_conv()
 
 
     def __rpn_cls_loss(self, rpn_cls_score, rpn_labels):

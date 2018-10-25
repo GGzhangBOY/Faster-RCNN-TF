@@ -23,7 +23,7 @@ def file_recursion(path_input,file_list):
 def open_pic(path_input):
     img = Image.open(path_input)
     pic = np.array(img)
-
+    picshape = pic.shape
     if(len(pic.shape)>2):
         channels = pic.shape[2]
     else:
@@ -33,7 +33,7 @@ def open_pic(path_input):
     dimy = pic.shape[0]
 
     pic = pic.tolist()
-    return pic,channels,dimx,dimy
+    return pic,channels,dimx,dimy,picshape
 
 class Data_label:
     img_name = ""
@@ -136,7 +136,7 @@ class Dataset_cus:
                 if((num_pic_processed>=0)&(num_gt == 0)):
                     img_Path = 'C:\\Dev_env\\Tensorflow_Python\\' + p_name
                     img_Path = img_Path.replace('/','\\')
-                    pic,channels,dimx,dimy = open_pic(img_Path)
+                    pic,channels,dimx,dimy,self.shape = open_pic(img_Path)
                     Datas.append(Data_label(p_name,pic,dimx,dimy,Data,num_gt,channels))
                     num_pic_processed += 1
                     Data = []
@@ -171,19 +171,19 @@ class Dataset_cus:
         dimy = pic.dimy
         channels = pic.pic_channels
 
-        return data_index,data_labels,dimx,dimy,channels
+        return data_index,data_labels,dimx,dimy,self.shape,channels
 
 
 if(__name__ == '__main__'):
     test = Dataset_cus()
-    _,label1,_,_,_ = test.next_batch()
+    _,label1,_,_,_,shape = test.next_batch()
 
-    print(label1,len(np.array(label1).shape))
+    print(label1,len(np.array(label1).shape),shape)
 
-    _,label2,_,_,_ = test.next_batch()
+    _,label2,_,_,_,shape = test.next_batch()
 
-    print(label2,np.array(label2).shape)
+    print(label2,np.array(label2).shape,shape)
 
-    _,label3,_,_,_ = test.next_batch()
+    _,label3,_,_,_,shape = test.next_batch()
 
-    print(label3,np.array(label3).shape)
+    print(label3,np.array(label3).shape,shape)
