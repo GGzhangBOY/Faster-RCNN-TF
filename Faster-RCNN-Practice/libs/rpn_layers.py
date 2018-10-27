@@ -58,6 +58,9 @@ class RPN_layers:
 
         return l_reg
 
+    def get_rpn_cls_score(self):
+        return self.__cls_conv()
+
     def get_rpn_cls_loss(self): 
         rpn_cls_score = self.__cls_conv()
         rpn_labels =self.rpn_labels

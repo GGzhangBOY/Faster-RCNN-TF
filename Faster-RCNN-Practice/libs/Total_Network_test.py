@@ -19,7 +19,7 @@ class Fast_RCNN:
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             feed_dict = {test_Resnet.x:data_index,test_Resnet.training:False}
-            test,feature = sess.run([roi_test.rpn_cls_score,feature_maps],feed_dict=feed_dict)
+            test,feature = sess.run([roi_test.rpn_cls_prob,feature_maps],feed_dict=feed_dict)
         print(feature)
 if(__name__=='__main__'):
     model_test = Fast_RCNN()
