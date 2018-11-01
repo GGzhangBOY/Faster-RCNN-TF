@@ -15,11 +15,11 @@ class Fast_RCNN:
         test_Resnet = resnet.Resnet(dimx,dimy,channels)
         feature_maps,feature_shape,strides = test_Resnet.build_main_structure()
         rpn_test = rpn.RPN_layers(feature_maps,feature_shape,self.__current_labels,"train",dimx,dimy,strides)
-        roi_test = roi_proposal_layer.roi_proposal_layer(rpn_test,self.__current_labels,shape,"train")
+        roi_test = roi_proposal_layer.roi_proposal_layer(rpn_test,self.__current_labels,feature_shape,"train")
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             feed_dict = {test_Resnet.x:data_index,test_Resnet.training:False}
-            test,feature = sess.run([roi_test.rpn_cls_prob,feature_maps],feed_dict=feed_dict)
+            test,feature = sess.run([roi_test.blobs,feature_maps],feed_dict=feed_dict)
         print(feature)
 if(__name__=='__main__'):
     model_test = Fast_RCNN()

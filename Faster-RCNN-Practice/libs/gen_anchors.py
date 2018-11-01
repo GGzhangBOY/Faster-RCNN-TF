@@ -39,8 +39,8 @@ def _mkanchors(ws, hs, x_ctr, y_ctr):
 
 def _scale_enum(anchors,scales):
     w,h,x_ctr,y_ctr = _mkPos(anchors)
-    ws = w*scales
-    hs = h*scales
+    ws = int(w)*scales
+    hs = int(h)*scales
     anchors = _mkanchors(ws,hs,x_ctr,y_ctr)
     return anchors
 
