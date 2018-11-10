@@ -4,6 +4,7 @@ import Dataset
 import resnet
 import rpn_layers as rpn
 import roi_proposal_layer
+import rpn_softmax
 
 class Fast_RCNN:
     __current_labels = []
@@ -15,12 +16,13 @@ class Fast_RCNN:
         test_Resnet = resnet.Resnet(dimx,dimy,channels)
         feature_maps,feature_shape,strides = test_Resnet.build_main_structure()
         rpn_test = rpn.RPN_layers(feature_maps,feature_shape,self.__current_labels,"train",dimx,dimy,strides)
-        roi_test = roi_proposal_layer.roi_proposal_layer(rpn_test,self.__current_labels,feature_shape,"train")
+        roi_test = roi_proposal_layer.roi_proposal_layer(rpn_test,self.__current_labels,shape,"train")
+
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
             feed_dict = {test_Resnet.x:data_index,test_Resnet.training:False}
-            test,feature = sess.run([roi_test.blobs,feature_maps],feed_dict=feed_dict)
-        print(feature)
+            blobs,feature = sess.run([roi_test.blobs,feature_maps],feed_dict=feed_dict)
+            
 if(__name__=='__main__'):
     model_test = Fast_RCNN()
     model_test.ResNet_get_data_test()

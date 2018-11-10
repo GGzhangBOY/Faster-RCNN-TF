@@ -4,32 +4,35 @@ from gen_anchors import generate_anchors
 
 
 class gan_anchor:
+    dimx = 0
+    dimy = 0
     def __init__(self,dimx,dimy,stride):
+        self.dimx = dimx
+        self.dimy = dimy
         self.sorce_anchors = self.__project_back_to_source(dimx,dimy,stride)
-
     def __rule(self,base_anchors,num_x,num_y,stride):
         anchors = np.array([np.newaxis,np.newaxis,np.newaxis,np.newaxis])
-        x_ctr = stride*num_x
-        y_ctr = stride*num_y
+        x_tl = stride*num_x
+        y_tl = stride*num_y
         for i in range(9):
-            if(x_ctr+base_anchors[i,0]<0):
-                x = 0
-            if(x_ctr+base_anchors[i,2]>num_x):
-                x = num_x
-            if(x_ctr+base_anchors[i,1]<0):
-                y = 0
-            if(x_ctr+base_anchors[i,3]>num_y):
-                y = num_y
+            width = base_anchors[i,2]-base_anchors[i,0]
+            height = base_anchors[i,3]-base_anchors[i,1]
+            if(x_tl+(base_anchors[i,2]-base_anchors[i,0])>self.dimx):
+                width = self.dimx
+            if(y_tl+(base_anchors[i,3]-base_anchors[i,1])>self.dimy):
+                height = self.dimy
         
-            x = x_ctr
-            y = y_ctr
-            w = base_anchors[i,2] - base_anchors[i,0]
-            h = base_anchors[i,3] - base_anchors[i,1]
-
-            anchor = np.array([x,y,w,h])
+            x = x_tl
+            y = y_tl
+            w = width
+            h = height
+            x1 = x+w
+            y1 = y+h
+            anchor = np.array([x,y,x1,y1])
             anchors = np.vstack((anchors,anchor))
 
         anchors = anchors[1:]
+        #this list return the top-letf and the w ,h
         return anchors
 
     def __project_back_to_source(self,source_dimx, source_dimy, stride):

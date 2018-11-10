@@ -14,14 +14,14 @@ class RPN_layers:
         self.pic_dimy = dimy
         self.feat_strides = strides
         self.__build_rpn()
-
+        self.expose_cls_result
     def __build_rpn(self):
         self.__RPN_conv1()
         self.rpn_labels, self.rpn_bbox_targets, self.rpn_bbox_inside_weights, self.rpn_bbox_outside_weights =\
             anchor_target_layer.anchor_target_layer(self.__cls_conv(),self.gt_boxs,self.pic_dimx,self.pic_dimy,self.feat_strides)
 
     def __RPN_conv1(self):
-        w1 = tf.Variable(tf.random_normal([3, 3, 1024, 256]))
+        w1 = tf.Variable(tf.random_normal([3, 3, 512, 256]))
         L1 = tf.nn.conv2d(self.feature_map,w1,strides=[1,1,1,1],padding="SAME")
         L1 = tf.nn.relu(L1)
         self.__shape1 = L1.get_shape()[3]
@@ -38,6 +38,11 @@ class RPN_layers:
             w_cls = tf.Variable(tf.random_normal([1,1,256,18],dtype = tf.float64))
             
             l_cls = tf.matmul(self.__feature_vector,w_cls)
+
+            l_cls = tf.reshape(l_cls,[1,self.feature_shape[0],self.feature_shape[1],18])
+            
+            self.expose_cls_result = l_cls
+            print("l_cls.get_shape(): ",l_cls.get_shape())
         """x_cls = tf.placeholder(tf.float32,[None,256])
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -50,6 +55,8 @@ class RPN_layers:
         with tf.variable_scope("reg"):
             w_reg = tf.Variable(tf.random_normal([1,1,256,36],dtype = tf.float64))
             l_reg = tf.matmul(self.__feature_vector,w_reg)
+
+            l_reg = tf.reshape(l_reg,[1,self.feature_shape[0],self.feature_shape[1],36])
         """x_reg = tf.placeholder(tf.float32,[None,256])
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())

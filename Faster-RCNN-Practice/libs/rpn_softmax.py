@@ -12,14 +12,14 @@ def rpn_softmax(rpn_cls_score):
 	with tf.variable_scope('rpn_softmax'):
 		# input shape dimension
 		shape        = tf.shape(rpn_cls_score)
-
+		print("In rpn_softmax score.shape:",shape)
 		a            = tf.reshape(rpn_cls_score, (shape[0], shape[1], shape[2], 2, -1) )  
 		a  			 = tf.transpose(a, [0,1,2,4,3]) # 2, 9 --> 9, 2
 		# resahpe rpn_cls_score to prepare for softmax
 
 		# softmax
 		rpn_cls_prob = tf.nn.softmax( a )
-		rpn_cls_prob = tf.transpose(a, [0,1,2,4,3])
+		rpn_cls_prob = tf.transpose(rpn_cls_prob, [0,1,2,4,3])
 		# reshape back to the original
 		rpn_cls_prob = tf.reshape( rpn_cls_prob, (shape[0], shape[1], shape[2], -1) )
 

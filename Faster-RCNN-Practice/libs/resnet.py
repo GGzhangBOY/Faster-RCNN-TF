@@ -4,7 +4,7 @@ class Resnet:
     def __init__(self,dimx,dimy,channels):
         self.dimx = dimx
         self.dimy = dimy
-        self.x = tf.placeholder(tf.float32,[None,(dimx*dimy)])
+        self.x = tf.placeholder(tf.float32,[None,(dimx*dimy)*channels])
         self.x = tf.reshape(self.x,[-1,dimy,dimx,channels])
         self.training = tf.placeholder(tf.bool, name='training')
 
@@ -79,21 +79,21 @@ class Resnet:
             #stage 2
             conv2_x = self.convolutional_block(L1_x3, 3, 64, [64, 64, 256], 2, 'a', self.training)
             L2_x1 = self.identity_block(conv2_x, 3, 256, [64, 64, 256], stage=2, block='b', training=self.training)
-            #L2_x2 = self.identity_block(L2_x1, 3, 256, [64, 64, 256], stage=2, block='c', training=training)
+            L2_x2 = self.identity_block(L2_x1, 3, 256, [64, 64, 256], stage=2, block='c', training=training)
 
             #stage 3
-            conv3_x = self.convolutional_block(L2_x1, 3, 256, [128,128,512], 3, 'a', self.training)
+            conv3_x = self.convolutional_block(L2_x2, 3, 256, [128,128,512], 3, 'a', self.training)
             L3_x1 = self.identity_block(conv3_x, 3, 512, [128,128,512], 3, 'b', training=self.training)
             #L3_x2 = self.identity_block(L3_x1, 3, 512, [128,128,512], 3, 'c', training=training)
             #L3_x3 = self.identity_block(L3_x2, 3, 512, [128,128,512], 3, 'd', training=training)
 
             #stage 4
-            conv4_x = self.convolutional_block(L3_x1, 3, 512, [256, 256, 1024], 4, 'a', self.training)
+            """conv4_x = self.convolutional_block(L3_x1, 3, 512, [256, 256, 1024], 4, 'a', self.training)
             L4_x1 = self.identity_block(conv4_x, 3, 1024, [256, 256, 1024], 4, 'b', training=self.training)
             #L4_x2 = self.identity_block(L4_x1, 3, 1024, [256, 256, 1024], 4, 'c', training=training)
             #L4_x3 = self.identity_block(L4_x2, 3, 1024, [256, 256, 1024], 4, 'd', training=training)
             #L4_x4 = self.identity_block (L4_x3, 3, 1024, [256, 256, 1024], 4, 'e', training=training)
-            L4_x5 = self.identity_block(L4_x1, 3, 1024, [256, 256, 1024], 4, 'f', training=self.training)
+            L4_x5 = self.identity_block(L4_x1, 3, 1024, [256, 256, 1024], 4, 'f', training=self.training)"""
 
             """with tf.Session() as sess: 
                 sess.run(tf.global_variables_initializer())
@@ -102,8 +102,8 @@ class Resnet:
             
             #feature_shape = feature_maps.shape
             strides = 16
-            shape = L4_x5.get_shape()[1:]
-        return L4_x5,shape,strides
+            shape = L3_x1.get_shape()[1:]
+        return L3_x1,shape,strides
                 
 
 

@@ -17,7 +17,7 @@ class anchor_label:
         self.pos = pos
 
 
-def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(3, 6)):
+def anchor_target_layer(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides=16, anchor_scales=2**np.arange(2, 5)):
     """rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = \
     tf.py_func( anchor_target_layer_python,[rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales],[tf.float32, tf.float32, tf.float32, tf.float32])"""
     rpn_labels, rpn_bbox_targets, rpn_bbox_inside_weights, rpn_bbox_outside_weights = anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides, anchor_scales)
@@ -56,12 +56,12 @@ def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides
     for i in range(len(canadidate)):
         for j in range(len(canadidate[i])):
             anchor = canadidate[i][j]
-            if((anchor[0] > dimx) | (anchor[1] > dimy)):
+            """if((anchor[0] > dimx) | (anchor[1] > dimy)):
                 continue
             if(np.abs(anchor[0]+anchor[2]) > dimx):
                 continue
             if(np.abs(anchor[1]+anchor[3]) > dimy):
-                continue
+                continue"""
         # calculate the overlap size,and judge the labels
             current_label, pos = bbox_overlaps.cal_IOU(anchor, gt_boxes)
             labels.append(current_label)
