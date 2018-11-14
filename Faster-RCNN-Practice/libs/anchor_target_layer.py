@@ -56,12 +56,12 @@ def anchor_target_layer_python(rpn_cls_score, gt_boxes, dimx, dimy, feat_strides
     for i in range(len(canadidate)):
         for j in range(len(canadidate[i])):
             anchor = canadidate[i][j]
-            """if((anchor[0] > dimx) | (anchor[1] > dimy)):
+            if((anchor[0] > dimx) | (anchor[1] > dimy)):
                 continue
-            if(np.abs(anchor[0]+anchor[2]) > dimx):
+            if(np.abs(anchor[2]-anchor[0]) > dimx):
                 continue
-            if(np.abs(anchor[1]+anchor[3]) > dimy):
-                continue"""
+            if(np.abs(anchor[3]-anchor[1]) > dimy):
+                continue
         # calculate the overlap size,and judge the labels
             current_label, pos = bbox_overlaps.cal_IOU(anchor, gt_boxes)
             labels.append(current_label)

@@ -2,23 +2,28 @@ import numpy as np
 import tensorflow as tf
 
 
-def bbox_transform(anchor, gt_box):
+def bbox_transform(ex_rois, gt_rois):
     """
     compute the transform that the bbox need to transform to the gt_box
     """
-    #print("anchor point ",anchor[0],anchor[1],anchor[2],anchor[3])
-    width = anchor[2]-anchor[0]
-    height = anchor[3]-anchor[1]
-    gt_width = gt_box[2]-gt_box[0]
-    gt_height = gt_box[3]-gt_box[1]
-    tx = (gt_box[0]-anchor[0])/width
-    ty = (gt_box[1]-anchor[1])/height
-    tw = np.log(gt_width/width)
-    th = np.log(gt_height/height)
-    print("tw th",tw,th)
-    result = [tx, ty, tw, th]
+    ex_widths          =  ex_rois[2] - ex_rois[0] + 1.0
+    ex_heights         =  ex_rois[3] - ex_rois[1] + 1.0
+    ex_ctr_x           =  ex_rois[0] + 0.5 * ex_widths
+    ex_ctr_y           =  ex_rois[1] + 0.5 * ex_heights
 
-    return result
+    gt_widths          =  gt_rois[2] - gt_rois[0] + 1.0
+    gt_heights         =  gt_rois[3] - gt_rois[1] + 1.0 
+    gt_ctr_x           =  gt_rois[0] + 0.5 * gt_widths
+    gt_ctr_y           =  gt_rois[1] + 0.5 * gt_heights
+
+    target_dx          =  (gt_ctr_x - ex_ctr_x ) / ex_widths 
+    target_dy          =  (gt_ctr_y - ex_ctr_y ) / ex_heights
+    target_dw          =  np.log(gt_widths/ ex_widths)
+    target_dh          =  np.log(gt_heights/ex_heights)
+
+    targets            =  np.vstack( (target_dx, target_dy, target_dw, target_dh ) )
+    targets            =  targets.transpose()
+    return targets
 
 
 def bbox_transform_inv(boxes, deltas):

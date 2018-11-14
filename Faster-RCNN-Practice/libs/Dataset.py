@@ -51,7 +51,7 @@ class Data_label:
             y1 = buff[3] - buff[1]
             x2 = buff[2] + buff[0]
             y2 = buff[3] + buff[1]
-            result.append([x1,y1,x2,y2])
+            result.append([x1,y1,x2,y2,1])
         #The result is a list of rect l-t point and the r-b point
         return result
 

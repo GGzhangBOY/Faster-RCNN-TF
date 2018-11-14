@@ -22,7 +22,7 @@ class Fast_RCNN:
             sess.run(tf.global_variables_initializer())
             feed_dict = {test_Resnet.x:data_index,test_Resnet.training:False}
             blobs,feature = sess.run([roi_test.blobs,feature_maps],feed_dict=feed_dict)
-            
+            print(blobs)
 if(__name__=='__main__'):
     model_test = Fast_RCNN()
     model_test.ResNet_get_data_test()

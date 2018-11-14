@@ -62,7 +62,6 @@ class RPN_layers:
             sess.run(tf.global_variables_initializer())
             feed_dict = {x_reg:self.__feature_vector}
             result = sess.run(l_cls,feed_dict = feed_dict)"""
-
         return l_reg
 
     def get_rpn_cls_score(self):

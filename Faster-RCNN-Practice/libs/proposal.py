@@ -17,10 +17,6 @@ class gan_anchor:
         for i in range(9):
             width = base_anchors[i,2]-base_anchors[i,0]
             height = base_anchors[i,3]-base_anchors[i,1]
-            if(x_tl+(base_anchors[i,2]-base_anchors[i,0])>self.dimx):
-                width = self.dimx
-            if(y_tl+(base_anchors[i,3]-base_anchors[i,1])>self.dimy):
-                height = self.dimy
         
             x = x_tl
             y = y_tl
