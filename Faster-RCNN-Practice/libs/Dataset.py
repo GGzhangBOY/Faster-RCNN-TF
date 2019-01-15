@@ -11,7 +11,7 @@ def file_recursion(path_input,file_list):
         for i in os.listdir(path_dir):
             path_i = os.path.join(path_dir,i)
             if(os.path.isfile(path_i)):
-                if(path_i.find("ellipseList")):
+                if(path_i.find("ellipseList")!=-1):
                     file_list.append(path_i)
             else:
                 file_recursion(path_i,file_list)
@@ -35,14 +35,12 @@ def open_pic(path_input):
     pic = pic.tolist()
     return pic,channels,dimx,dimy
 
+
 class Data_label:
     img_name = ""
-    Data = 0
     gt_pos = []
-    dimx = 0
-    dimy = 0
     num_faces = 1
-    pic_channels = 0
+    label = 1
 
     def __process_to_rect(self,get_pos):
         result = []
@@ -54,31 +52,24 @@ class Data_label:
             result.append([x1,y1,x2,y2])
         
         return result
-
-    def __init__(self,img_Name,Data,dimx,dimy,gt_pos,num_faces,pic_channels):
+    
+    def __init__(self,img_Name,gt_pos,num_faces,label):
         self.img_name = img_Name
-        self.Data=Data
         self.gt_pos.append(self.__process_to_rect(gt_pos))
         self.num_faces = num_faces
-        self.dimx = dimx
-        self.dimy = dimy
-        self.pic_channels = pic_channels
+        self.label = label
 
 class Dataset_cus:
-    
-    total_batches = 0
-    batch_size = 1
-    dataset_year = "2002"
-    num_batch_processed = 0
-    __Lines_storer = []
-    __Files_storer = []
-    __is_break_point_activate = False
-    __is_reading_file_changed = True
 
     def __init__(self, batch_size_in=1, dataset_year="2002"):
         self.batch_size = batch_size_in
         self.dataset_year = dataset_year
-        
+        self.Datas = self.__read_data()
+        self.ftrain = self.Datas[:int(0.9*len(self.Datas))]
+        self.ftest = self.Datas[int(0.9*len(self.Datas)):]
+        self.num_train_process = 0
+        self.num_test_process = 0
+
     def __read_data(self):
         Data = []
         Datas = []
@@ -86,21 +77,17 @@ class Dataset_cus:
         lines = []
         flag_text = False 
         num_gt = 0
-        file_list = file_recursion('C:\\Dev_env\\Tensorflow_Python\\FDDB-folds\\',[])
+        current_label = 0
+        file_list = file_recursion("Faster-RCNN-TF\FDDB-folds",[])
 
         i = 0
         i_l = 0
-
-        while(i < len(file_list)):
-            file = file_list[i]
-            if(self.__is_reading_file_changed == True):
-                f = open(file,'r')
-                for line in f:
-                    lines.append(line)
-                self.__is_reading_file_changed = False
-            
-            else:
-                lines = self.__Lines_storer
+        num_txt = 0
+        while(num_txt < len(file_list)):
+            file_name = file_list[num_txt]
+            f = open(file_name,'r')
+            for line in f:
+                lines.append(line)
 
             while(i_l<len(lines)):
                 line = lines[i_l]
@@ -123,10 +110,13 @@ class Dataset_cus:
                     buff = []
                     Data_buff = line.split(' ')
                     
-                    for i in range(5):
-                        if(i == 2):
+                    for i in range(6):
+                        if(i == 2 or i == 5):
                             continue
-                        buff.append(float(Data_buff[i]))
+                        elif(i == 6):
+                            current_label = float(Data_buff[i])
+                        else:
+                            buff.append(float(Data_buff[i]))
 
                     Data.append(buff)
                     num_gt-=1
@@ -134,44 +124,61 @@ class Dataset_cus:
                     i_l = 0
                 
                 if((num_pic_processed>=0)&(num_gt == 0)):
-                    img_Path = 'C:\\Dev_env\\Tensorflow_Python\\' + p_name
+                    img_Path = 'Faster-RCNN-TF\\' + p_name
                     img_Path = img_Path.replace('/','\\')
-                    pic,channels,dimx,dimy = open_pic(img_Path)
-                    Datas.append(Data_label(p_name,pic,dimx,dimy,Data,num_gt,channels))
+                    Datas.append(Data_label(p_name,Data,num_gt,current_label))
                     num_pic_processed += 1
-                    Data = []
-                    if(num_pic_processed<self.batch_size):
-                        continue
-                    else:
-                        self.num_batch_processed += 1
-                        self.__Lines_storer = lines
-                        return Datas
 
-            self.__is_reading_file_changed = True
-            file_list.remove(file_list[0])
-            i = 0
+            num_txt+=1
+        return Datas
             
-    def next_batch(self):
-        data_index = []
-        data_labels = []
-        if(self.__is_break_point_activate == False):
-            Datas = self.__read_data()
-            self.__is_break_point_activate  = True
-        else:
-            Datas = self.__read_data()
+    def next_batch(self,batch_size = 1,mod = "train"):
+        datas = []
+        labels = []
+        gt_boxs = []
+        sources = []
+        labels_rt = []
+        gt_boxs_rt = []
 
-        pic = Datas.pop()
-        data_index = pic.Data
-        data_labels = copy.deepcopy(pic.gt_pos)
-        pic.gt_pos.remove(pic.gt_pos[0])
-        a = np.array(data_labels)
-        c = np.squeeze(a)
-        data_labels = c.tolist()
-        dimx = pic.dimx
-        dimy = pic.dimy
-        channels = pic.pic_channels
+        if(mod == "train"):
+            if((self.num_train_process+batch_size)<len(self.ftrain)):
+                for i in range(batch_size):
+                    datas.append(self.ftrain[self.num_train_process+i].img_name)
+                    labels.append(self.ftrain[self.num_train_process+i].label)
+                    gt_boxs.append(self.ftrain[self.num_train_process+i].gt_pos)
+                self.num_train_process+=batch_size
+            else:
+                for i in range(len(self.ftrain)-self.num_train_process):
+                    datas.append(self.ftrain[self.num_train_process+i].img_name)
+                    labels.append(self.ftrain[self.num_train_process+i].label)
+                    gt_boxs.append(self.ftrain[self.num_train_process+i].gt_pos)
+                self.num_train_process =0
+        if(mod == "test"):
+            if((self.num_test_process+batch_size)<len(self.ftest)):
+                for i in range(batch_size):
+                    datas.append(self.ftest[self.num_test_process+i].img_name)
+                    labels.append(self.ftest[self.num_test_process+i].label)
+                    gt_boxs.append(self.ftest[self.num_test_process+i].gt_pos)
+                self.num_test_process+=batch_size
+            else:
+                for i in range(len(self.ftest)-self.num_test_process):
+                    datas.append(self.ftest[self.num_test_process+i].img_name)
+                    labels.append(self.ftest[self.num_test_process+i].label)
+                    gt_boxs.append(self.ftest[self.num_test_process+i].gt_pos)
 
-        return data_index,data_labels,dimx,dimy,channels
+        for fname in datas:
+            img = Image.open(fname)
+            sources.append(np.array(img))
+        for label in labels:
+            labels_rt.append([int(label)])         
+        for gt_box in gt_boxs:
+            gt_boxs_rt.append(gt_box)
+            
+        dimx = np.array(sources[0]).shape[1]
+        dimy = np.array(sources[0]).shape[2]
+        channels = np.array(sources[0]).shape[3]
+
+        return sources,labels_rt,gt_boxs_rt,dimx,dimy,channels
 
 
 if(__name__ == '__main__'):

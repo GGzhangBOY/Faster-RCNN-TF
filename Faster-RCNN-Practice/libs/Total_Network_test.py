@@ -9,7 +9,7 @@ class Fast_RCNN:
     __current_labels = []
     def ResNet_get_data_test(self):
         test = Dataset.Dataset_cus()
-        data_index,self.__current_labels,dimx,dimy,channels = test.next_batch()
+        data_index,self.__current_labels,gt_boxs,dimx,dimy,channels = test.next_batch()
         test_Resnet = resnet.Resnet()
         data_index = np.array(data_index)
         data_index = data_index[np.newaxis,:,:,:]
